@@ -1,0 +1,39 @@
+from qgis.core import QgsProject, QgsSpatialIndex, QgsFeature
+
+layer_name = 'ImagePoints'
+
+# Get the layer
+layer = QgsProject.instance().mapLayersByName(layer_name)[0]
+
+# Build a spatial index
+index = QgsSpatialIndex(layer.getFeatures())
+
+# Create a function to get the closest feature to a given value
+def get_closest_feature(layer, target_value):
+    closest_feature = None
+    min_diff = float('inf')
+    
+    # Iterate over features
+    for feature in layer.getFeatures():
+        hub_dist = feature['HubDist']
+        diff = abs(hub_dist - target_value)
+        if diff < min_diff:
+            min_diff = diff
+            closest_feature = feature
+    
+    return closest_feature
+
+# List to store IDs of the selected features
+selected_ids = []
+
+# Target values: 0, 10, 20, ...
+for target in range(0, 601, 10):
+    closest_feature = get_closest_feature(layer, target)
+    if closest_feature:
+        selected_ids.append(closest_feature.id())
+
+# Select features by their IDs
+layer.selectByIds(selected_ids)
+
+# Print the selected IDs
+print("Selected feature IDs:", selected_ids)
